@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Facial Emotion Detection</title>
+    <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+    <!-- Added professional fonts from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Added lottie-player web component -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        /* Updated to use Inter font for better readability */
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        background: #0f172a;
+        color: #cbd5e1;
+        line-height: 1.6;
+        padding-bottom: 80px;
+      }
+
+      /* Theme Variables */
+      :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --accent: #0ea5e9;
+        --accent-dark: #0284c7;
+        --border: #1e293b;
+      }
+
+      /* Dark Theme (default) */
+      body.theme-dark {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --accent: #0ea5e9;
+        --accent-dark: #0284c7;
+        --border: #1e293b;
+      }
+
+      /* Light Theme */
+      body.theme-light {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #e2e8f0;
+        --text-primary: #0f172a;
+        --text-secondary: #334155;
+        --text-muted: #64748b;
+        --accent: #0284c7;
+        --accent-dark: #0369a1;
+        --border: #cbd5e1;
+      }
+
+      /* Emerald Theme */
+      body.theme-emerald {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --accent: #10b981;
+        --accent-dark: #059669;
+        --border: #1e293b;
+      }
+
+      /* Current (Cyan) Theme */
+      body.theme-current {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --text-primary: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --accent: #06b6d4;
+        --accent-dark: #0891b2;
+        --border: #1e293b;
+      }
+
+      body {
+        background: var(--bg-primary);
+        color: var(--text-secondary);
+      }
+
+      .hero-content h1 {
+        color: var(--text-primary);
+      }
+
+      .hero-content p {
+        color: var(--text-muted);
+      }
+
+      .upload-area {
+        border-color: var(--border);
+        background: var(--bg-secondary);
+      }
+
+      .upload-area:hover {
+        border-color: var(--accent);
+      }
+
+      .upload-area p {
+        color: var(--text-primary);
+      }
+
+      .upload-area small {
+        color: var(--text-muted);
+      }
+
+      .preview-image {
+        border-color: var(--border);
+      }
+
+      .result-box {
+        background: var(--bg-secondary);
+        border-color: var(--border);
+      }
+
+      .emotion-display {
+        color: var(--accent);
+      }
+
+      .confidence-display {
+        color: var(--text-muted);
+      }
+
+      .bar-container {
+        background: var(--bg-primary);
+      }
+
+      .bar-fill {
+        background: var(--accent);
+      }
+
+      .bar-label {
+        color: var(--text-secondary);
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--bg-primary);
+      }
+
+      .btn-primary:hover {
+        background: var(--accent-dark);
+      }
+
+      .btn-secondary {
+        background: var(--bg-secondary);
+        color: var(--accent);
+        border-color: var(--bg-secondary);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-primary);
+        border-color: var(--accent);
+      }
+
+      .tabs {
+        border-bottom-color: var(--border);
+      }
+
+      .tab-btn {
+        color: var(--text-muted);
+      }
+
+      .tab-btn.active {
+        color: var(--accent);
+        border-bottom-color: var(--accent);
+      }
+
+      .history-item {
+        background: var(--bg-secondary);
+        border-left-color: var(--accent);
+      }
+
+      .history-item:hover {
+        background: var(--bg-secondary);
+      }
+
+      .history-emotion {
+        color: var(--accent);
+      }
+
+      .history-meta {
+        color: var(--text-muted);
+      }
+
+      .spinner {
+        border-color: var(--bg-secondary);
+        border-top-color: var(--accent);
+      }
+
+      .loading {
+        color: var(--accent);
+      }
+
+      .typed-text {
+        color: var(--accent);
+      }
+
+      .empty-state {
+        color: var(--text-muted);
+      }
+
+      .hero-visual {
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          var(--bg-secondary) 100%
+        );
+      }
+
+      /* Hero Section */
+      .hero {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 4rem 2rem 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+        align-items: center;
+      }
+
+      .hero-content h1 {
+        /* Updated to use Poppins font for headings with improved sizing */
+        font-family: "Poppins", sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1.2;
+        margin-bottom: 1rem;
+        letter-spacing: -0.5px;
+        color: #f1f5f9;
+      }
+
+      .hero-content p {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin-bottom: 1.5rem;
+        line-height: 1.7;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .hero-visual {
+        background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+        border-radius: 20px;
+        padding: 2rem;
+      }
+
+      @media (max-width: 968px) {
+        .hero {
+          grid-template-columns: 1fr;
+          padding: 2rem 2rem 1rem;
+        }
+        .hero-content h1 {
+          font-size: 2rem;
+        }
+        .hero-visual {
+          height: 250px;
+        }
+      }
+
+      /* Main Container */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem 3rem;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+      }
+
+      @media (max-width: 968px) {
+        .content {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Upload Section */
+      .upload-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .upload-area {
+        border: 2px solid #1e293b;
+        border-radius: 12px;
+        padding: 2.5rem 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #1e293b;
+      }
+
+      .upload-area:hover {
+        border-color: #0ea5e9;
+        background: #1e293b;
+        transform: translateY(-1px);
+      }
+
+      .upload-area.dragover {
+        border-color: #0ea5e9;
+        background: #0f172a;
+      }
+
+      .upload-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .upload-area p {
+        color: #f1f5f9;
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .upload-area small {
+        color: #94a3b8;
+        font-size: 0.9rem;
+      }
+
+      #fileInput {
+        display: none;
+      }
+
+      .preview-image {
+        width: 100%;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        max-height: 350px;
+        object-fit: cover;
+        border: 1px solid #1e293b;
+        transition: all 0.2s ease;
+      }
+
+      /* Result Section */
+      .result-section {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .result-box {
+        background: #1e293b;
+        border: 1px solid #1e293b;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        min-height: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .emotion-display {
+        /* Using Poppins for emotion display heading */
+        font-family: "Poppins", sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        color: #0ea5e9;
+      }
+
+      .confidence-display {
+        font-size: 1.1rem;
+        color: #94a3b8;
+        font-weight: 600;
+      }
+
+      .emotion-bars {
+        width: 100%;
+        text-align: left;
+        margin-top: 1rem;
+      }
+
+      .emotion-bar {
+        margin: 0.8rem 0;
+        font-size: 0.9rem;
+      }
+
+      .bar-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.4rem;
+        color: #cbd5e1;
+        font-weight: 500;
+      }
+
+      .bar-container {
+        background: #0f172a;
+        height: 20px;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .bar-fill {
+        height: 100%;
+        background: #0ea5e9;
+        border-radius: 6px;
+        transition: width 0.4s ease;
+      }
+
+      /* Buttons */
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .btn-primary {
+        background: #0ea5e9;
+        color: #0f172a;
+      }
+
+      .btn-primary:hover {
+        background: #0284c7;
+        transform: translateY(-1px);
+      }
+
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+
+      .btn-secondary {
+        background: #1e293b;
+        color: #0ea5e9;
+        border: 1px solid #1e293b;
+      }
+
+      .btn-secondary:hover {
+        background: #0f172a;
+        border-color: #0ea5e9;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        gap: 2rem;
+        border-bottom: 1px solid #1e293b;
+        margin-bottom: 1.5rem;
+      }
+
+      .tab-btn {
+        background: none;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .tab-btn:hover {
+        color: #cbd5e1;
+      }
+
+      .tab-btn.active {
+        color: #00d4ff;
+        border-bottom: 2px solid #00d4ff;
+        /* Remove or comment out the box-shadow line below */
+        /* box-shadow: 0 2px 8px rgba(0, 212, 255, 0.3); */
+      }
+
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      .history-item {
+        background: #1e293b;
+        padding: 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        border-left: 3px solid #0ea5e9;
+        transition: all 0.2s ease;
+      }
+
+      .history-item:hover {
+        background: #334155;
+        transform: translateX(2px);
+      }
+
+      .history-emotion {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        color: #0ea5e9;
+        font-size: 1rem;
+      }
+
+      .history-meta {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+      }
+
+      /* Loading */
+      .loading {
+        display: none;
+        text-align: center;
+        color: #0ea5e9;
+      }
+
+      .spinner {
+        border: 3px solid #1e293b;
+        border-top: 3px solid #0ea5e9;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 0.75rem;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Messages */
+      .error,
+      .success {
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+        border-left: 4px solid;
+        display: none;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+
+      .error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #f87171;
+        border-color: #ef4444;
+      }
+
+      .success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #86efac;
+        border-color: #22c55e;
+      }
+
+      .error.show,
+      .success.show {
+        display: block;
+      }
+
+      /* Empty State */
+      .empty-state {
+        text-align: center;
+        padding: 1.5rem;
+        color: #94a3b8;
+      }
+
+      .empty-state p {
+        font-size: 0.95rem;
+      }
+
+      .typed-text {
+        font-family: "Poppins", sans-serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #0ea5e9;
+        margin-bottom: 1rem;
+        min-height: 1.8rem;
+        letter-spacing: 0.5px;
+      }
+
+      .typed-text::after {
+        content: "|";
+        animation: blink 0.7s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+
+      .theme-selector {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      /* Top-right fixed theme switcher */
+      .theme-top-right {
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 6px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(6px);
+      }
+
+      @media (max-width: 480px) {
+        .theme-top-right {
+          top: 8px;
+          right: 8px;
+          padding: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Theme switcher (fixed top-right) -->
+    
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+          "
+        >
+          <h1>Facial Emotion Detection</h1>
+        </div>
+        <div class="typed-text" id="typedText"></div>
+        <p>
+          Advanced AI technology that accurately detects and analyzes emotions
+          from facial expressions in real-time
+        </p>
+        <div class="hero-buttons">
+          <button
+            class="btn-primary"
+            onclick="document.getElementById('fileInput').click()"
+          >
+            Get Started
+          </button>
+          <button
+            class="btn-secondary"
+            onclick="document.getElementById('upload').scrollIntoView({behavior: 'smooth'})"
+          >
+            Learn More
+          </button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <lottie-player
+          src="/static/Working Together to Build an Online Business (1).json"
+          background="transparent"
+          speed="1"
+          style="width: 100%; max-width: 700px; height: 300px"
+          loop
+          autoplay
+        >
+        </lottie-player>
+      </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+      <div class="content">
+        <!-- Upload Section -->
+        <div class="upload-section" id="upload">
+          <div class="upload-area" id="uploadArea">
+            <span class="upload-icon">📸</span>
+            <p>Click to upload or drag & drop</p>
+            <small>PNG, JPG, GIF up to 16MB</small>
+          </div>
+          <input type="file" id="fileInput" accept="image/*" />
+
+          <div class="error" id="errorMsg"></div>
+          <div class="success" id="successMsg"></div>
+
+          <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing image...</p>
+          </div>
+
+          <img id="previewImage" class="preview-image" style="display: none" />
+
+          <div class="button-group">
+            <button
+              class="btn-primary"
+              onclick="document.getElementById('fileInput').click()"
+            >
+              Upload Image
+            </button>
+            <button class="btn-secondary" onclick="resetUpload()">Clear</button>
+          </div>
+        </div>
+
+        <!-- Result Section -->
+        <div class="result-section" id="results">
+          <div class="result-box" id="resultBox" style="display: none">
+            <div class="emotion-display" id="emotionResult"></div>
+            <div class="confidence-display" id="confidenceResult"></div>
+            <div class="emotion-bars" id="allEmotions"></div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'stats')">
+              Statistics
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'history')">
+              History
+            </button>
+            <button
+              class="tab-btn"
+              id="fullHistoryBtn"
+              style="display: none"
+              onclick="switchTab(event, 'fullHistory')"
+            >
+              Full History
+            </button>
+          </div>
+
+          <!-- Statistics Tab -->
+          <div id="stats" class="tab-content active">
+            <div id="statsContent"></div>
+          </div>
+
+          <!-- History Tab -->
+          <div id="history" class="tab-content">
+            <div id="historyContent"></div>
+          </div>
+
+          <!-- Full History Tab -->
+          <div id="fullHistory" class="tab-content">
+            <div id="fullHistoryContent"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation moved to bottom as fixed footer -->
+
+    <script>
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const resultBox = document.getElementById("resultBox");
+      const loading = document.getElementById("loading");
+      const errorMsg = document.getElementById("errorMsg");
+      const successMsg = document.getElementById("successMsg");
+      const previewImage = document.getElementById("previewImage");
+
+      // Upload handlers
+      uploadArea.addEventListener("click", () => fileInput.click());
+
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", () => {
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove("dragover");
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+          uploadImage();
+        }
+      });
+
+      fileInput.addEventListener("change", uploadImage);
+
+      async function uploadImage() {
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          previewImage.style.display = "block";
+          previewImage.classList.add("fade-in");
+        };
+        reader.readAsDataURL(file);
+
+        // Upload and analyze
+        loading.style.display = "block";
+        resultBox.style.display = "none";
+        errorMsg.classList.remove("show");
+        successMsg.classList.remove("show");
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await fetch("/predict", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            showError(data.error || "Error analyzing image");
+            return;
+          }
+
+          displayResult(data);
+          loadStats();
+          loadHistory();
+          showSuccess(`Emotion detected: ${data.emotion}`);
+        } catch (error) {
+          showError("Error uploading image: " + error.message);
+        } finally {
+          loading.style.display = "none";
+        }
+      }
+
+      function displayResult(data) {
+        document.getElementById("emotionResult").textContent = data.emotion;
+        document.getElementById(
+          "confidenceResult"
+        ).textContent = `Confidence: ${data.confidence}%`;
+
+        const emotionsHtml = Object.entries(data.all_emotions)
+          .sort((a, b) => b[1] - a[1])
+          .map(
+            ([emotion, score]) => `
+                    <div class="emotion-bar">
+                        <div class="bar-label">
+                            <span>${emotion}</span>
+                            <span>${score.toFixed(1)}%</span>
+                        </div>
+                        <div class="bar-container">
+                            <div class="bar-fill" style="width: ${score}%"></div>
+                        </div>
+                    </div>
+                `
+          )
+          .join("");
+
+        document.getElementById("allEmotions").innerHTML = emotionsHtml;
+        resultBox.style.display = "flex";
+      }
+
+      async function loadStats() {
+        try {
+          const response = await fetch("/stats");
+          const stats = await response.json();
+
+          const statsHtml =
+            stats.length > 0
+              ? stats
+                  .map(
+                    (stat) => `
+                    <div class="history-item">
+                        <div class="history-emotion">${stat.emotion}</div>
+                        <div class="history-meta">
+                            Count: ${stat.count} | Avg Confidence: ${stat.avg_confidence}%
+                        </div>
+                    </div>
+                `
+                  )
+                  .join("")
+              : '<div class="empty-state"><p>No statistics yet. Upload an image to get started.</p></div>';
+
+          document.getElementById("statsContent").innerHTML = statsHtml;
+        } catch (error) {
+          console.error("Error loading stats:", error);
+        }
+      }
+
+      async function loadHistory() {
+        try {
+          const response = await fetch("/history");
+          const history = await response.json();
+
+          const MAX_ITEMS = 2;
+          const displayItems = history.slice(0, MAX_ITEMS);
+
+          let historyHtml = displayItems
+            .map(
+              (item) => `
+                    <div class="history-item">
+                        <div class="history-emotion">${item.emotion}</div>
+                        <div class="history-meta">
+                            ${item.filename} | ${
+                item.confidence
+              }% confidence | ${new Date(item.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                `
+            )
+            .join("");
+
+          // Add "Show More" button if there are more items
+          if (history.length > MAX_ITEMS) {
+            historyHtml += `
+              <button class="btn-secondary" style="width: 100%; margin-top: 1rem;" onclick="switchTab(event, 'fullHistory')">
+                Show More (${history.length - MAX_ITEMS} more)
+              </button>
+            `;
+          }
+
+          if (history.length === 0) {
+            historyHtml =
+              '<div class="empty-state"><p>No history yet. Start uploading images to build your history.</p></div>';
+          }
+
+          document.getElementById("historyContent").innerHTML = historyHtml;
+        } catch (error) {
+          console.error("Error loading history:", error);
+        }
+      }
+
+      function switchTab(e, tab) {
+        e.preventDefault();
+        document
+          .querySelectorAll(".tab-content")
+          .forEach((el) => el.classList.remove("active"));
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((el) => el.classList.remove("active"));
+        document.getElementById(tab).classList.add("active");
+        e.target.classList.add("active");
+
+        // Show Full History button if clicking Show More
+        if (tab === "fullHistory") {
+          loadFullHistory();
+        }
+      }
+
+      async function loadFullHistory() {
+        try {
+          const response = await fetch("/history");
+          const history = await response.json();
+
+          const fullHistoryHtml =
+            history.length > 0
+              ? history
+                  .map(
+                    (item) => `
+                    <div class="history-item">
+                        <div class="history-emotion">${item.emotion}</div>
+                        <div class="history-meta">
+                            ${item.filename} | ${
+                      item.confidence
+                    }% confidence | ${new Date(item.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                `
+                  )
+                  .join("")
+              : '<div class="empty-state"><p>No history found.</p></div>';
+
+          document.getElementById("fullHistoryContent").innerHTML =
+            fullHistoryHtml;
+        } catch (error) {
+          console.error("Error loading full history:", error);
+        }
+      }
+
+      function resetUpload() {
+        fileInput.value = "";
+        resultBox.style.display = "none";
+        previewImage.style.display = "none";
+        errorMsg.classList.remove("show");
+        successMsg.classList.remove("show");
+      }
+
+      function showError(message) {
+        errorMsg.textContent = message;
+        errorMsg.classList.add("show");
+      }
+
+      function showSuccess(message) {
+        successMsg.textContent = message;
+        successMsg.classList.add("show");
+        setTimeout(() => successMsg.classList.remove("show"), 3000);
+      }
+
+      // Typed text effect with multiple words
+      const typedTextElement = document.getElementById("typedText");
+      const words = [
+        "Detect emotions in real-time",
+        "Analyze facial expressions",
+        "Advanced AI technology",
+        "Semi-Accurate emotion recognition",
+        "Real-time face analysis",
+      ];
+      let wordIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+
+      function typeText() {
+        const currentWord = words[wordIndex];
+
+        if (!isDeleting) {
+          if (charIndex < currentWord.length) {
+            typedTextElement.textContent += currentWord.charAt(charIndex);
+            charIndex++;
+            setTimeout(typeText, 80);
+          } else {
+            isDeleting = true;
+            setTimeout(typeText, 2000); // Pause before deleting
+          }
+        } else {
+          if (charIndex > 0) {
+            typedTextElement.textContent = currentWord.substring(
+              0,
+              charIndex - 1
+            );
+            charIndex--;
+            setTimeout(typeText, 50);
+          } else {
+            isDeleting = false;
+            wordIndex = (wordIndex + 1) % words.length;
+            setTimeout(typeText, 500); // Pause before typing next word
+          }
+        }
+      }
+
+      typeText();
+
+      // Load initial data
+      loadStats();
+      loadHistory();
+
+      // Theme System
+      const themeButtons = document.querySelectorAll(".theme-btn");
+      const savedTheme = localStorage.getItem("theme") || "dark";
+
+      // Set initial theme
+      document.body.className = `theme-${savedTheme}`;
+      document
+        .querySelector(`[data-theme="${savedTheme}"]`)
+        .classList.add("active");
+
+      themeButtons.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const theme = btn.getAttribute("data-theme");
+          document.body.className = `theme-${theme}`;
+          localStorage.setItem("theme", theme);
+
+          // Update active button
+          themeButtons.forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>
