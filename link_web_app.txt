@@ -1,17 +1,4 @@
 # Render Deployment Link
 
-Once deployed to Render, your app will be accessible at:
-https://your-app-name.onrender.com
+https://face-detection-app-1-5fsk.onrender.com
 
-Steps to deploy:
-1. Push this project to GitHub
-2. Sign up at render.com
-3. Create new Web Service
-4. Connect your GitHub repository
-5. Set Runtime: Python 3.11
-6. Build Command: pip install -r requirements.txt
-7. Start Command: gunicorn app:app
-8. Add "gunicorn" to requirements.txt first
-9. Click Deploy
-
-Your live link will appear after deployment completes!
